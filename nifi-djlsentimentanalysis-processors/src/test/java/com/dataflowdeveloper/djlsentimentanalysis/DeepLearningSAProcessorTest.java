@@ -36,14 +36,14 @@ public class DeepLearningSAProcessorTest {
         URI uri = r.toURI();
         return Paths.get(uri).toAbsolutePath().getParent().toString();
     }
-/**
+
     private void runAndAssertHappy() {
         testRunner.setValidateExpressionUsage(false);
         testRunner.run();
         testRunner.assertValid();
 
-        testRunner.assertAllFlowFilesTransferred(DeepLearningQAProcessor.REL_SUCCESS);
-        List<MockFlowFile> successFiles = testRunner.getFlowFilesForRelationship(DeepLearningQAProcessor.REL_SUCCESS);
+        testRunner.assertAllFlowFilesTransferred(DeepLearningSAProcessor.REL_SUCCESS);
+        List<MockFlowFile> successFiles = testRunner.getFlowFilesForRelationship(DeepLearningSAProcessor.REL_SUCCESS);
 
         for (MockFlowFile mockFile : successFiles) {
 
@@ -57,19 +57,10 @@ public class DeepLearningSAProcessorTest {
     }
 
     @Test
-    public void testProcessorSQUADExample() {
-    	testRunner.setProperty(DeepLearningQAProcessor.QUESTION_NAME, QUESTION_SQUAD);
-    	testRunner.setProperty(DeepLearningQAProcessor.PARAGRAPH_NAME, PARAGRAPH_SQUAD);
+    public void testProcessor() {
+    	testRunner.setProperty(DeepLearningSAProcessor.MESSAGE_NAME, "This is the best ingest tool ever, so great.");
     	testRunner.enqueue();
         runAndAssertHappy();
     }
 
-    @Test
-    public void testProcessorSimple() {
-        testRunner.setProperty(DeepLearningQAProcessor.QUESTION_NAME, QUESTION_TEST);
-        testRunner.setProperty(DeepLearningQAProcessor.PARAGRAPH_NAME, PARAGRAPH_TEST);
-        testRunner.enqueue();
-        runAndAssertHappy();
-    }
-**/
 }

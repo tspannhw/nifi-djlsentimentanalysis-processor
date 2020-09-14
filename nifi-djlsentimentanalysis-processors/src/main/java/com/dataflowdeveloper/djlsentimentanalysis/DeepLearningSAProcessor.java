@@ -1,5 +1,6 @@
 package com.dataflowdeveloper.djlsentimentanalysis;
 
+import ai.djl.modality.cv.Image;
 import org.apache.nifi.annotation.behavior.*;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.SeeAlso;
@@ -28,17 +29,16 @@ import java.util.*;
 public class DeepLearningSAProcessor extends AbstractProcessor {
 
     // Input variables
-    public static final String QUESTION_NAME = "question";
-    public static final String PARAGRAPH_NAME = "paragraph";
+    public static final String MESSAGE_NAME = "message";
     public static final String OUTPUT_PREDICTION = "prediction";
     public static final String OUTPUT_ERROR = "error";
 
     // properties
-    public static final PropertyDescriptor QUESTION = new PropertyDescriptor.Builder().name( QUESTION_NAME )
-            .description("Question").required(true).defaultValue("What")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR).build();
+//    public static final PropertyDescriptor QUESTION = new PropertyDescriptor.Builder().name( QUESTION_NAME )
+//            .description("Question").required(true).defaultValue("What")
+//            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR).build();
 
-    public static final PropertyDescriptor PARAGRAPH = new PropertyDescriptor.Builder().name(PARAGRAPH_NAME)
+    public static final PropertyDescriptor PARAGRAPH = new PropertyDescriptor.Builder().name(MESSAGE_NAME)
             .description("Paragraph").required(true).defaultValue("...")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR).build();
 
@@ -54,12 +54,11 @@ public class DeepLearningSAProcessor extends AbstractProcessor {
     private Set<Relationship> relationships;
 
     // DL4J Deep Learning Service
-    private QAService service;
+    private SentimentAnalysisService service;
 
     @Override
     protected void init(final ProcessorInitializationContext context) {
         final List<PropertyDescriptor> descriptors = new ArrayList<PropertyDescriptor>();
-        descriptors.add(QUESTION);
         descriptors.add(PARAGRAPH);
 
         this.descriptors = Collections.unmodifiableList(descriptors);
@@ -82,7 +81,7 @@ public class DeepLearningSAProcessor extends AbstractProcessor {
 
     @OnScheduled
     public void onScheduled(final ProcessContext context) {
-        service = new QAService();
+        service = new SentimentAnalysisService();
         return;
     }
 
@@ -93,24 +92,27 @@ public class DeepLearningSAProcessor extends AbstractProcessor {
             flowFile = session.create();
         }
         try {
-            String question = flowFile.getAttribute(QUESTION_NAME);
-            if (question == null) {
-                question = context.getProperty(QUESTION_NAME).evaluateAttributeExpressions(flowFile).getValue();
-            }
-
-            String paragraph = context.getProperty(PARAGRAPH_NAME).evaluateAttributeExpressions(flowFile).getValue();
-            if (paragraph == null) {
-                paragraph = flowFile.getAttribute(PARAGRAPH_NAME);
+            String message = flowFile.getAttribute(MESSAGE_NAME);
+            if (message == null) {
+                message = context.getProperty(MESSAGE_NAME).evaluateAttributeExpressions(flowFile).getValue();
             }
 
             Map<String, String> attributes = flowFile.getAttributes();
             Map<String, String> attributesClean = new HashMap<>();
             
-            Result result = service.predict( question, paragraph );
+            Result result = service.predict( message );
 
-            attributesClean.put(OUTPUT_PREDICTION, result.getPrediction());
-            attributesClean.put(OUTPUT_ERROR, result.getErrorString());
-
+            if (result != null) {
+                try {
+                    attributesClean.put(String.format("probpositive"), String.format("%.2f", result.getProbability()));
+                    attributesClean.put(String.format("probpositiveperc"), String.format("%.2f", result.getProbabilityPercentage()));
+                    attributesClean.put(String.format("probnegative"), String.format("%.2f", result.getProbabilityNegative()));
+                    attributesClean.put(String.format("probnegativeperc"), String.format("%.2f", result.getProbabilityNegativePercentage()));
+                    attributesClean.put(String.format("rawclassification"), String.format("%s", result.getRawClassification()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             if (attributes.size() == 0) {
                 session.transfer(flowFile, REL_FAILURE);
             } else {
