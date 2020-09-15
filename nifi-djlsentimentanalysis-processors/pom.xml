@@ -26,6 +26,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <djl.version>0.7.0</djl.version>
+        <ai.djl.default_engine>MXNet</ai.djl.default_engine>
         <classifier/>
     </properties>
 
@@ -77,17 +78,34 @@
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>api</artifactId>
-            <version>${djl.version}</version>
+            <version>0.7.0</version>
         </dependency>
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>basicdataset</artifactId>
-            <version>${djl.version}</version>
+            <version>0.7.0</version>
         </dependency>
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>model-zoo</artifactId>
-            <version>${djl.version}</version>
+            <version>0.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ai.djl.mxnet</groupId>
+            <artifactId>mxnet-engine</artifactId>
+            <version>0.7.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>ai.djl.mxnet</groupId>
+            <artifactId>mxnet-native-auto</artifactId>
+            <version>1.7.0-backport</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>ai.djl.mxnet</groupId>
+            <artifactId>mxnet-model-zoo</artifactId>
+            <version>0.7.0</version>
         </dependency>
         <dependency>
     <groupId>ai.djl.pytorch</groupId>
@@ -106,23 +124,6 @@
     <artifactId>pytorch-model-zoo</artifactId>
     <version>0.7.0</version>
 </dependency>
-<dependency>
-    <groupId>ai.djl.mxnet</groupId>
-    <artifactId>mxnet-engine</artifactId>
-    <version>0.7.0</version>
-    <scope>runtime</scope>
-</dependency>
-        <dependency>
-            <groupId>ai.djl.mxnet</groupId>
-            <artifactId>mxnet-native-auto</artifactId>
-            <version>1.7.0-backport</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>ai.djl.mxnet</groupId>
-            <artifactId>mxnet-model-zoo</artifactId>
-            <version>${djl.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
