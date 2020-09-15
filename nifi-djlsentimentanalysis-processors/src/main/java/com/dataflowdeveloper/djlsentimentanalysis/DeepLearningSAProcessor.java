@@ -1,12 +1,12 @@
 package com.dataflowdeveloper.djlsentimentanalysis;
 
-import ai.djl.modality.cv.Image;
 import org.apache.nifi.annotation.behavior.*;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.SeeAlso;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.expression.ExpressionLanguageScope;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.*;
 import org.apache.nifi.processor.exception.ProcessException;
@@ -30,17 +30,10 @@ public class DeepLearningSAProcessor extends AbstractProcessor {
 
     // Input variables
     public static final String MESSAGE_NAME = "message";
-    public static final String OUTPUT_PREDICTION = "prediction";
-    public static final String OUTPUT_ERROR = "error";
 
-    // properties
-//    public static final PropertyDescriptor QUESTION = new PropertyDescriptor.Builder().name( QUESTION_NAME )
-//            .description("Question").required(true).defaultValue("What")
-//            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR).build();
-
-    public static final PropertyDescriptor PARAGRAPH = new PropertyDescriptor.Builder().name(MESSAGE_NAME)
-            .description("Paragraph").required(true).defaultValue("...")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR).build();
+    public static final PropertyDescriptor MESSAGE = new PropertyDescriptor.Builder().name(MESSAGE_NAME)
+            .description("Message").required(true).defaultValue("...")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR).expressionLanguageSupported( ExpressionLanguageScope.FLOWFILE_ATTRIBUTES).build();
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder().name("success")
@@ -59,7 +52,7 @@ public class DeepLearningSAProcessor extends AbstractProcessor {
     @Override
     protected void init(final ProcessorInitializationContext context) {
         final List<PropertyDescriptor> descriptors = new ArrayList<PropertyDescriptor>();
-        descriptors.add(PARAGRAPH);
+        descriptors.add( MESSAGE );
 
         this.descriptors = Collections.unmodifiableList(descriptors);
 
@@ -97,7 +90,6 @@ public class DeepLearningSAProcessor extends AbstractProcessor {
                 message = context.getProperty(MESSAGE_NAME).evaluateAttributeExpressions(flowFile).getValue();
             }
 
-            Map<String, String> attributes = flowFile.getAttributes();
             Map<String, String> attributesClean = new HashMap<>();
             
             Result result = service.predict( message );
@@ -113,7 +105,7 @@ public class DeepLearningSAProcessor extends AbstractProcessor {
                     e.printStackTrace();
                 }
             }
-            if (attributes.size() == 0) {
+            if (attributesClean.size() == 0) {
                 session.transfer(flowFile, REL_FAILURE);
             } else {
                 flowFile = session.putAllAttributes(flowFile, attributesClean);
@@ -123,6 +115,8 @@ public class DeepLearningSAProcessor extends AbstractProcessor {
         } catch (final Throwable t) {
             getLogger().error("Unable to process Deep Learning Sentiment Analysis DL " + t.getLocalizedMessage());
             getLogger().error("{} failed to process due to {}; rolling back session", new Object[] { this, t });
+            session.transfer(flowFile, REL_FAILURE);
+            session.commit();
         }
     }
 }
