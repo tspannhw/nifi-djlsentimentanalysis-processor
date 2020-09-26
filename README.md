@@ -1,6 +1,9 @@
 # nifi-djlsentimentanalysis-processor
 
 
+![Flow](https://raw.githubusercontent.com/tspannhw/nifi-djlqa-processor/main/examples/DeepLearningExampleFlowSentimentBERT.png)
+
+
 
 
 Deep Learning Sentiment Analysis with DJL.ai
