@@ -46,6 +46,7 @@ public class SentimentAnalysisService {
         Criteria<String, Classifications> criteria =
                 Criteria.builder()
                         .optApplication(Application.NLP.SENTIMENT_ANALYSIS)
+                        .optEngine( "PyTorch" )
                         .setTypes(String.class, Classifications.class)
                         .optProgress(new ProgressBar())
                         .build();
