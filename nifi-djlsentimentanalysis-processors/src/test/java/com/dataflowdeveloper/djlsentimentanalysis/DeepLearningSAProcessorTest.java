@@ -58,9 +58,17 @@ public class DeepLearningSAProcessorTest {
 
     @Test
     public void testProcessor() {
-    	testRunner.setProperty(DeepLearningSAProcessor.MESSAGE_NAME, "This is the best ingest tool ever, so great.");
-    	testRunner.enqueue();
-        runAndAssertHappy();
+    	tester("This is the best ingest tool ever, so great.");
     }
 
+    @Test
+    public void testProcessor2() {
+        tester("Apache NiFi is a great project to watch sessions of at ApacheCon in 2020");
+    }
+
+    public void tester(String testMessage ){
+        testRunner.setProperty(DeepLearningSAProcessor.MESSAGE_NAME, testMessage);
+        testRunner.enqueue();
+        runAndAssertHappy();
+    }
 }
